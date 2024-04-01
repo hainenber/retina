@@ -54,8 +54,7 @@ jobs:
         run: |
           for image in retina-agent retina-init; do
             IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
-            cat image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json
-            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
+            DIGEST=$(jq -r '.["containerimage.digest"]' image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
             cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
           done
 
