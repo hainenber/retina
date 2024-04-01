@@ -218,7 +218,7 @@ container-docker: buildx # util target to build container images using docker bu
 		--build-arg GOARCH=$$arch \
 		--build-arg APP_INSIGHTS_ID=$(APP_INSIGHTS_ID) \
 		--target=$(TARGET) \
-		--metadata-file $$image_metadata_filename
+		--metadata-file $$image_metadata_filename \
 		-t $(IMAGE_REGISTRY)/$(IMAGE):$(TAG) \
 		$(CONTEXT_DIR)
 
