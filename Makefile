@@ -220,8 +220,7 @@ container-docker: buildx # util target to build container images using docker bu
 		--build-arg APP_INSIGHTS_ID=$(APP_INSIGHTS_ID) \
 		--target=$(TARGET) \
 		-t $(IMAGE_REGISTRY)/$(IMAGE):$(TAG) \
-		$(CONTEXT_DIR); \
-	ls -lR $(CONTEXT_DIR)
+		$(CONTEXT_DIR);
 
 retina-image: ## build the retina linux container image.
 	echo "Building for $(PLATFORM)"
