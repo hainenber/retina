@@ -51,6 +51,8 @@ jobs:
             BUILDX_ACTION=--push
       
       - name: Sign container image
+        env:
+          COSIGN_EXPERIMENTAL: 1
         run: |
           for image in retina-agent retina-init; do
             IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
