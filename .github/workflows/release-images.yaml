@@ -50,161 +50,137 @@ jobs:
             PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
             BUILDX_ACTION=--push
       
-      - name: Obtain image metadata  
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-metadata
-          path: image-metadata-*.json
-      
       - name: Sign container image
         run: |
           for image in retina-agent retina-init; do
             IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
-            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
+            DIGEST=$(jq .containerimage.digest $(git rev-parse --show-toplevel)/image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
             cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
           done
 
-  retina-win-images:
-    name: Build Agent Windows Images
-    runs-on: ubuntu-latest
+  # retina-win-images:
+  #   name: Build Agent Windows Images
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        platform: ["windows"]
-        arch: ["amd64"]
+  #   strategy:
+  #     matrix:
+  #       platform: ["windows"]
+  #       arch: ["amd64"]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v4
-        with:
-          go-version: ">=1.21.0"
-      - run: go version
+  #     - uses: actions/setup-go@v4
+  #       with:
+  #         go-version: ">=1.21.0"
+  #     - run: go version
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.4.0
+  #     - name: Install Cosign
+  #       uses: sigstore/cosign-installer@v3.4.0
       
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
 
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+  #     - name: Log in to registry
+  #       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
-      - name: Build/Push Images
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "TAG=$(make version)" >> $GITHUB_ENV
-          make retina-image-win \
-            IMAGE_NAMESPACE=${{ github.repository }} \
-            PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
-            BUILDX_ACTION=--push
+  #     - name: Build/Push Images
+  #       shell: bash
+  #       run: |
+  #         set -euo pipefail
+  #         echo "TAG=$(make version)" >> $GITHUB_ENV
+  #         make retina-image-win \
+  #           IMAGE_NAMESPACE=${{ github.repository }} \
+  #           PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
+  #           BUILDX_ACTION=--push
 
-      - name: Obtain image metadata  
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-metadata
-          path: image-metadata-*.json
+  #     - name: Sign container image
+  #       run: |
+  #         for year in 2019 2022; do
+  #           for image in retina-agent retina-init; do
+  #             IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-windows-ltsc$year-${{ matrix.arch }}"
+  #             DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-windows-ltsc$year-${{ matrix.arch }}.json) 
+  #             cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
+  #           done
+  #         done
 
-      - name: Sign container image
-        run: |
-          for year in 2019 2022; do
-            for image in retina-agent retina-init; do
-              IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-windows-ltsc$year-${{ matrix.arch }}"
-              DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-windows-ltsc$year-${{ matrix.arch }}.json) 
-              cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
-            done
-          done
+  # operator-images:
+  #   name: Build Operator Images
+  #   runs-on: ubuntu-latest
 
-  operator-images:
-    name: Build Operator Images
-    runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       platform: ["linux"]
+  #       arch: ["amd64"]
 
-    strategy:
-      matrix:
-        platform: ["linux"]
-        arch: ["amd64"]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v4
-        with:
-          go-version: ">=1.21.0"
-      - run: go version
+  #     - uses: actions/setup-go@v4
+  #       with:
+  #         go-version: ">=1.21.0"
+  #     - run: go version
     
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.4.0
+  #     - name: Install Cosign
+  #       uses: sigstore/cosign-installer@v3.4.0
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
 
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+  #     - name: Log in to registry
+  #       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
-      - name: Build/Push Images
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "TAG=$(make version)" >> $GITHUB_ENV
-          make retina-operator-image \
-            IMAGE_NAMESPACE=${{ github.repository }} \
-            PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
-            BUILDX_ACTION=--push
+  #     - name: Build/Push Images
+  #       shell: bash
+  #       run: |
+  #         set -euo pipefail
+  #         echo "TAG=$(make version)" >> $GITHUB_ENV
+  #         make retina-operator-image \
+  #           IMAGE_NAMESPACE=${{ github.repository }} \
+  #           PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
+  #           BUILDX_ACTION=--push
       
-      - name: Obtain image metadata  
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-metadata
-          path: image-metadata-*.json
-          
-      - name: Sign container image
-        run: |
-          for image in retina-operator ; do
-            IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
-            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
-            cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
-          done
+  #     - name: Sign container image
+  #       run: |
+  #         for image in retina-operator ; do
+  #           IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
+  #           DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
+  #           cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
+  #         done
 
-  manifests:
-    name: Generate Manifests
-    runs-on: ubuntu-latest
-    needs: [retina-images, retina-win-images, operator-images]
+  # manifests:
+  #   name: Generate Manifests
+  #   runs-on: ubuntu-latest
+  #   needs: [retina-images, retina-win-images, operator-images]
 
-    strategy:
-      matrix:
-        component: ["retina", "operator"]
+  #   strategy:
+  #     matrix:
+  #       component: ["retina", "operator"]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
 
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+  #     - name: Log in to registry
+  #       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
-      - name: Generate Manifests
-        shell: bash
-        run: |
-          set -euo pipefail
-          make manifest \
-            IMAGE_NAMESPACE=${{ github.repository }} \
-            COMPONENT=${{ matrix.component }}
+  #     - name: Generate Manifests
+  #       shell: bash
+  #       run: |
+  #         set -euo pipefail
+  #         make manifest \
+  #           IMAGE_NAMESPACE=${{ github.repository }} \
+  #           COMPONENT=${{ matrix.component }}
       
-      - name: Obtain image metadata  
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-metadata
-          path: image-metadata-*.json
-      
-      - name: Sign container image
-        run: |
-          for image in retina-operator ; do
-            IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG"
-            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG.json) 
-            cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
-          done
+  #     - name: Sign container image
+  #       run: |
+  #         for image in retina-operator ; do
+  #           IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG"
+  #           DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG.json) 
+  #           cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
+  #         done
