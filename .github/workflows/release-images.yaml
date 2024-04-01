@@ -49,7 +49,7 @@ jobs:
             IMAGE_NAMESPACE=${{ github.repository }} \
             PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
             BUILDX_ACTION=--push
-          ls -lR 
+          find . -type d -printf "/%h/%f\n" -o -type f -printf "/%h/%f\n"
       
       - name: Sign container image
         run: |
