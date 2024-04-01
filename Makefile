@@ -206,7 +206,8 @@ container-docker: buildx # util target to build container images using docker bu
 	os=$$(echo $(PLATFORM) | cut -d'/' -f1); \
 	arch=$$(echo $(PLATFORM) | cut -d'/' -f2); \
 	image_tag="$(IMAGE_REGISTRY)/$(IMAGE):$(TAG)"
-	image_metadata_filename="image-metadata-$$(basename $(IMAGE))-$(TAG).json"
+	image_name=$$(basename $(IMAGE))
+	image_metadata_filename="image-metadata-$$image_name-$(TAG).json"
 	echo "Building for $$os/$$arch"; \
 	docker buildx build \
 		$(BUILDX_ACTION) \
