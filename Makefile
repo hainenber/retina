@@ -205,9 +205,9 @@ buildx:
 container-docker: buildx # util target to build container images using docker buildx. do not invoke directly.
 	os=$$(echo $(PLATFORM) | cut -d'/' -f1); \
 	arch=$$(echo $(PLATFORM) | cut -d'/' -f2); \
-	image_name=$$(basename $(IMAGE))
-	image_metadata_filename="image-metadata-$$image_name-$(TAG).json"
-	touch $$image_metadata_filename
+	image_name=$$(basename $(IMAGE)); \
+	image_metadata_filename="image-metadata-$$image_name-$(TAG).json"; \
+	touch $$image_metadata_filename; \
 	echo "Building for $(os)/$(arch) with $(image_name)"; \
 	docker buildx build \
 		$(BUILDX_ACTION) \
@@ -220,7 +220,7 @@ container-docker: buildx # util target to build container images using docker bu
 		--build-arg APP_INSIGHTS_ID=$(APP_INSIGHTS_ID) \
 		--target=$(TARGET) \
 		-t $(IMAGE_REGISTRY)/$(IMAGE):$(TAG) \
-		$(CONTEXT_DIR)
+		$(CONTEXT_DIR); \
 	ls -lR $(CONTEXT_DIR)
 
 retina-image: ## build the retina linux container image.
