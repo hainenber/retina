@@ -2,7 +2,7 @@ name: Release Retina Container Images
 
 on:
   push:
-    branches: [main]
+    branches: ["test-sign-released-images"]
     tags: ["v*"]
 
 permissions:
@@ -50,14 +50,18 @@ jobs:
             PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
             BUILDX_ACTION=--push
       
+      - name: Obtain image metadata  
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata
+          path: image-metadata-*.json
+      
       - name: Sign container image
         run: |
-          for image in \
-            ghcr.io/${{ github.repository }}/retina-agent:$TAG-${{ matrix.platform }}-${{ matrix.arch }} \
-            ghcr.io/${{ github.repository }}/retina-init:$TAG-${{ matrix.platform }}-${{ matrix.arch }} \
-          ; do
-            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${image})
-            cosign sign --yes ${DIGEST} 
+          for image in retina-agent retina-init; do
+            IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
+            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
+            cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
           done
 
   retina-win-images:
@@ -97,16 +101,20 @@ jobs:
             PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
             BUILDX_ACTION=--push
 
+      - name: Obtain image metadata  
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata
+          path: image-metadata-*.json
+
       - name: Sign container image
         run: |
-          for image in \
-            ghcr.io/${{ github.repository }}/retina-agent:$TAG-windows-ltsc2019-${{ matrix.arch }} \
-            ghcr.io/${{ github.repository }}/retina-init:$TAG-windows-ltsc2019-${{ matrix.arch }} \
-            ghcr.io/${{ github.repository }}/retina-agent:$TAG-windows-ltsc2022-${{ matrix.arch }} \
-            ghcr.io/${{ github.repository }}/retina-init:$TAG-windows-ltsc2022-${{ matrix.arch }} \
-          ; do 
-            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${image})
-            cosign sign --yes ${DIGEST}
+          for year in 2019 2022; do
+            for image in retina-agent retina-init; do
+              IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-windows-ltsc$year-${{ matrix.arch }}"
+              DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-windows-ltsc$year-${{ matrix.arch }}.json) 
+              cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
+            done
           done
 
   operator-images:
@@ -145,14 +153,19 @@ jobs:
             IMAGE_NAMESPACE=${{ github.repository }} \
             PLATFORM=${{ matrix.platform }}/${{ matrix.arch }} \
             BUILDX_ACTION=--push
+      
+      - name: Obtain image metadata  
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata
+          path: image-metadata-*.json
           
       - name: Sign container image
         run: |
-          for image in \
-            ghcr.io/${{ github.repository }}/retina-operator:$TAG-${{ matrix.platform }}-${{ matrix.arch }} \
-          ; do
-            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${image})
-            cosign sign --yes ${DIGEST}
+          for image in retina-operator ; do
+            IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG-${{ matrix.platform }}-${{ matrix.arch }}"
+            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG-${{ matrix.platform }}-${{ matrix.arch }}.json) 
+            cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
           done
 
   manifests:
@@ -181,3 +194,17 @@ jobs:
           make manifest \
             IMAGE_NAMESPACE=${{ github.repository }} \
             COMPONENT=${{ matrix.component }}
+      
+      - name: Obtain image metadata  
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-metadata
+          path: image-metadata-*.json
+      
+      - name: Sign container image
+        run: |
+          for image in retina-operator ; do
+            IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG"
+            DIGEST=$(jq .containerimage.digest image-metadata-$image-$TAG.json) 
+            cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
+          done
