@@ -189,6 +189,6 @@ jobs:
           fi
           for image in "${images[@]}"; do
             IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG"
-            DIGEST=$(docker builx imagetools inspect $IMAGE_PATH --format "{{json .Manifest}}" | jq -r .digest)
+            DIGEST=$(docker buildx imagetools inspect $IMAGE_PATH --format "{{json .Manifest}}" | jq -r .digest)
             cosign sign --yes ${IMAGE_PATH}@${DIGEST} 
           done
