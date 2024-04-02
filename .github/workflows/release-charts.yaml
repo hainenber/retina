@@ -41,7 +41,6 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
           echo $TAG
           helm package ./deploy/manifests/controller/helm/retina --version $TAG
-          helm push retina-$TAG.tgz oci://ghcr.io/${{ github.repository }}/charts 2>&1 > helm_push_result.txt
-          cat helm_push_result.txt
+          helm push retina-$TAG.tgz oci://ghcr.io/${{ github.repository }}/charts >> helm_push_result.txt 2>&1
           cosign sign --yes ghcr.io/${{ github.repository }}/charts/retina@$(tail -n 1 helm_push_result.txt | awk '{ print $2 }')
       
