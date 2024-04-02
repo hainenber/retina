@@ -29,9 +29,6 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.4.0
 
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u $ --password-stdin
-      
       - name: Build, Push and Sign Chart
         id: build_chart
         shell: bash
@@ -41,6 +38,7 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_OUTPUT
           echo $TAG
           helm package ./deploy/manifests/controller/helm/retina --version $TAG
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u $ --password-stdin
           helm push retina-$TAG.tgz oci://ghcr.io/${{ github.repository }}/charts >> helm_push_result.txt 2>&1
-          cosign sign --yes ghcr.io/${{ github.repository }}/charts/retina@$(tail -n 1 helm_push_result.txt | awk '{ print $2 }')
+          cosign sign --yes oci://ghcr.io/${{ github.repository }}/charts/retina@$(tail -n 1 helm_push_result.txt | awk '{ print $2 }')
       

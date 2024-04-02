@@ -184,7 +184,7 @@ jobs:
         run: |
           export TAG="$(make version)"
           images=("agent" "init")
-          if [[ {{ matrix.component }} == "operator" ]]; then
+          if [[ ${{ matrix.component }} == "operator" ]]; then
             images=("operator")
           fi
           for image in "${images[@]}"; do
