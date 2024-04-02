@@ -183,9 +183,9 @@ jobs:
       - name: Sign manifest
         run: |
           export TAG="$(make version)"
-          images=("agent" "init")
+          images=("retina-agent" "retina-init")
           if [[ ${{ matrix.component }} == "operator" ]]; then
-            images=("operator")
+            images=("retina-operator")
           fi
           for image in "${images[@]}"; do
             IMAGE_PATH="ghcr.io/${{ github.repository }}/$image:$TAG"
